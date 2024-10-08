@@ -4,19 +4,32 @@ const app = express(); // we are creating a express js application, creating a n
 
 
 
-app.use("/user", (req, res) => {
-    res.send("HAAHAHHAHAHA");
-})
-
-
 //GET user
+app.get("/user/:userId/posts/:postsId", (req, res, next) => {
 
-app.get("/user", (req, res) => {
+    console.log(req.path);
+    console.log(req.params)
 
-    res.send({
-        firstName:"Karthik",
-        lastName:"Kumar"
-    })
+    // res.send({
+    //     firstName:"Karthik",
+    //     lastName:"Kumar"
+    // })
+    console.log("executing A callback function!");
+    // res.send(req.params);
+    next();
+}, (req, res, next) => {
+    console.log("executing B callback function");
+
+
+    //res.send("Hello from second callback!!");
+    next();
+}, (req, res, next) => {
+
+    console.log("executing third callback function");
+    // res.sendStatus(200)
+    // res.send(req.params);
+    //res.status(500).send(req.params);
+    res.status(403).send("Bad Request");
 });
 
 app.post("/user", (req, res) => {
