@@ -4,7 +4,8 @@
   "description": "devtinder app",
   "main": "index.js",
   "scripts": {
-    "start":"node src/app.js",
+    "start": "node src/app.js",
+    "devdebug": "set DEBUG=express:* & node --watch src/app2.js",
     "dev": "node --watch src/app2.js"
   },
   "keywords": [
@@ -16,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.0",
-    "mongoose": "^8.7.1"
+    "mongoose": "^8.7.1",
+    "validator": "^13.12.0"
   }
 }
