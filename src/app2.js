@@ -8,6 +8,8 @@ const User = require("./models/user");
 
 app.use(express.json())
 
+const {ValidateSignUpData} = require("./Utils/validations");
+
 
 // find a user from the database
 
@@ -71,37 +73,90 @@ app.get("/feed", async (req, res) => {
 })
 
 //updating the data of the user
-app.patch("/user", async (req, res) => {
+// app.patch("/user", async (req, res) => {
 
-    //const userId = req.body?.userId;
-    const emailID = req.body?.emailID;
-    
-    
+//     //const userId = req.body?.userId;
+//     const emailID = req.body?.emailID;
+//     try {
+
+//         const user = await User.findOne({emailID: emailID});
+//         let userId = user._id;
+//         const response = await User.findByIdAndUpdate(userId, req.body, {
+//             new:true,
+//             lean:true,
+//             runValidators:true,
+//             select: {
+//                 _id:0,
+//                 firstName:1,
+//                 lastName:1,
+//                 emailID:1,
+//                 password:1
+//             }
+
+//         });
+//         console.log("response after updating ", response);
+
+//         if(!response) {
+//             res.status(404).send("User not found");
+//         } else {
+//             res.send(response);
+//         }
+        
+        
+//     } catch(err) {
+//         res.status(500).send("Something went wrong " + err.message);
+//     }
+// })
+
+
+app.patch("/user/:userId", async (req, res) => {
+
+    const userId = req.params?.userId;
+    console.log("userId", userId);
+    var data = req.body;
+
 
     try {
 
-        const user = await User.findOne({emailID: emailID});
-        let userId = user._id;
-        const response = await User.findByIdAndUpdate(userId, req.body, {
-            new:true,
-            lean:true,
-            select: {
-                _id:0,
-                firstName:1,
-                lastName:1,
-                emailID:1,
-                password:1
+        // const user = await User.findOne({emailID: emailID});
+        // let userId = user._id;
+
+        const ALLOWED_UPDATES = ["userId","password","age","gender","photoUrl","about","skills"];
+
+        //every key present in req.body should be allowed to update
+        const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key)); 
+
+        if(!isUpdateAllowed) {
+            throw new Error("Update not allowed");
+        }
+
+        let skills = req.body?.skills;
+        if(skills) {
+            //remove duplicate
+            let unique_array = skills.reduce(function(acc, val) {
+                if(!acc.includes(val)) {
+                    acc.push(val);
+                }
+                return acc;
+            }, []);
+
+            if(unique_array.length > 10) {
+                throw new Error("Skills cannot exceed 10");
             }
 
-        });
-        console.log("response after updating ", response);
+            data.skills = unique_array;
+        }
 
+        const response = await User.findByIdAndUpdate(userId, data, {
+            new:true,
+            runValidators:true,
+        });
+        
         if(!response) {
             res.status(404).send("User not found");
         } else {
             res.send(response);
         }
-        
         
     } catch(err) {
         res.status(500).send("Something went wrong " + err.message);
@@ -111,14 +166,25 @@ app.patch("/user", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
 
-    const user = new User(req.body);
-
     try {
-        const response = await user.save();
-        console.log("response in creating => ", response);
-        res.send("User created successfully");
+        // Validation of data
+        ValidateSignUpData(req);
+
+        console.log("validated user data successfully");
+        
+        const {firstName, lastName, emailID, password} = req.body;
+
+        const user = new User({
+            firstName,
+            lastName,
+            emailID,
+            password
+        });
+
+        await user.save();
+        res.send("User saved successfully to the database");
     } catch(err) {
-        res.status(400).send("Error in saving the user" + err.message);
+        res.status(400).send("Error "+ err.message);
     }
 
 })
