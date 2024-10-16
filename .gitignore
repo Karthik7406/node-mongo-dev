@@ -1,1 +1,4 @@
 node_modules
+app3.js
+src/models/animal.js
+.vscode

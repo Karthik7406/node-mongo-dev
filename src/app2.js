@@ -1,14 +1,16 @@
 const express = require("express");
-
 const app = express(); // we are creating a express js application, creating a new web server
 
 const {connectDB} = require("./config/database");
 
 const User = require("./models/user");
+const {ValidateSignUpData} = require("./Utils/validations");
+
+const bcrypt = require("bcrypt");
+
+
 
 app.use(express.json())
-
-const {ValidateSignUpData} = require("./Utils/validations");
 
 
 // find a user from the database
@@ -170,15 +172,15 @@ app.post("/signup", async (req, res) => {
         // Validation of data
         ValidateSignUpData(req);
 
-        console.log("validated user data successfully");
-        
+        //Encrypt the password
         const {firstName, lastName, emailID, password} = req.body;
+        const passwordHash = await bcrypt.hash(password,10);
 
         const user = new User({
             firstName,
             lastName,
             emailID,
-            password
+            password: passwordHash
         });
 
         await user.save();
