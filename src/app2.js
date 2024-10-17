@@ -12,6 +12,7 @@ const cookieParser = require("cookie-parser");
 
 const jwt = require("jsonwebtoken");
 
+const {userAuth} = require("./middlewares/auth");
 
 app.use(express.json())
 app.use(cookieParser());
@@ -213,7 +214,7 @@ app.post("/login", async (req, res) => {
 
     if(isPasswordValid) {
 
-        const token = jwt.sign({_id: user._id}, "DEVTINER$790");
+        const token = jwt.sign({_id: user._id}, "DEVTINDER$790");
         res.cookie("token ", token);    
         res.send("login successful");
     } else {
@@ -229,21 +230,11 @@ app.post("/login", async (req, res) => {
 
 
 //Getting the details of the Profile
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
 
     try {
-        const cookie = req.cookies;
-        const {token} = cookie;
-    
-        if(!token) {
-            throw new Error("Invalid token");
-        }
-
-        const decoded_message = jwt.verify(token, "DEVTINER$790");
-
-        const {_id} = decoded_message;
-
-        const user = await User.findById(_id);
+       
+        const user = req.user;
 
         if(!user) {
             throw new Error("Invalid user");

@@ -1,36 +1,39 @@
-const adminAuth = (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
-    console.log("auth middlewares");
 
-    const token = "xyz";
-    const isAdminAuthenticated = token === "xyz";
+//this function will read the request and verify the user
+const userAuth = async (req, res, next) => {
 
-    if(!isAdminAuthenticated) {
-        res.status(401).send("user is not authenticated");
-    } else {
-        next();
+    try {
+
+            const {token} = req.cookies;
+            console.log("token ", token);
+
+            if(!token) {
+                throw new Error("Token is invalid");
+            }
+
+            const decodedObj = jwt.verify(token, "DEVTINDER$790")
+            const {_id} = decodedObj;
+            const user = await User.findById(_id);
+
+            if(!user) {
+                throw new Error("Invalid user");
+            }
+
+            req.user = user; //attaching the user to the request 
+
+            //user is valid, execute the next() request handler/middleware
+            next();
+    } catch(err) {
+
+        console.log("catch error");
+        res.status(400).send("Error "+ err.message);
     }
-
-}
-
-
-const userAuth = (req, res, next) => {
-
-    console.log("user middlewares");
-
-    const token = "xyzab";
-    const isAdminAuthenticated = token === "xyz";
-
-    if(!isAdminAuthenticated) {
-        res.status(401).send("user is not authenticated");
-    } else {
-        next();
-    }
-
 }
 
 
 module.exports = {
-    adminAuth,
     userAuth
 }
