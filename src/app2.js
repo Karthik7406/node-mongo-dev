@@ -8,9 +8,13 @@ const {ValidateSignUpData} = require("./Utils/validations");
 
 const bcrypt = require("bcrypt");
 
+const cookieParser = require("cookie-parser");
+
+const jwt = require("jsonwebtoken");
 
 
 app.use(express.json())
+app.use(cookieParser());
 
 
 // find a user from the database
@@ -207,16 +211,48 @@ app.post("/login", async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if(!isPasswordValid) {
-        throw new Error("Invalid Credentials");
-    } else {
+    if(isPasswordValid) {
+
+        const token = jwt.sign({_id: user._id}, "DEVTINER$790");
+        res.cookie("token ", token);    
         res.send("login successful");
+    } else {
+        
+        throw new Error("Invalid Credentials");
     }
 
 } catch(err) {
     res.status(400).send("Error "+ err.message);
 }
 
+})
+
+
+//Getting the details of the Profile
+app.get("/profile", async (req, res) => {
+
+    try {
+        const cookie = req.cookies;
+        const {token} = cookie;
+    
+        if(!token) {
+            throw new Error("Invalid token");
+        }
+
+        const decoded_message = jwt.verify(token, "DEVTINER$790");
+
+        const {_id} = decoded_message;
+
+        const user = await User.findById(_id);
+
+        if(!user) {
+            throw new Error("Invalid user");
+        }
+        res.send(user);
+    } catch(err) {
+        res.status(400).send("Error "+ err.message);
+    }
+   
 })
 
 connectDB()
