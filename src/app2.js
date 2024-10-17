@@ -62,8 +62,12 @@ app.post("/login", async (req, res) => {
 
     if(isPasswordValid) {
 
-        const token = jwt.sign({_id: user._id}, "DEVTINDER$790");
-        res.cookie("token ", token);    
+        const token = jwt.sign({_id: user._id}, "DEVTINDER$790", {expiresIn: "1d"});
+        const options =  {
+            expires: new Date(Date.now() + 5000)
+         };
+
+        res.cookie("token ", token, options);    
         res.send("login successful");
     } else {
         
@@ -92,6 +96,14 @@ app.get("/profile", userAuth, async (req, res) => {
         res.status(400).send("Error "+ err.message);
     }
    
+})
+
+
+//send connection request
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+
+    const user = req.user;
+    res.send(`${user.firstName} send a connection request`);
 })
 
 
