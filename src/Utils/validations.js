@@ -1,5 +1,5 @@
 const validator = require("validator");
-
+const bcrypt = require("bcrypt");
 
 function ValidateSignUpData(req) {
 
@@ -15,6 +15,52 @@ function ValidateSignUpData(req) {
 
 }
 
+
+function validateEditProfileData (req) {
+    const allowed_Updates = [
+        "firstName",
+        "lastName",
+        "age",
+        "gender",
+        "about",
+        "photoUrl",
+        "skills"
+    ];
+
+    const isUpdateAllowed = Object.keys(req.body).every(key => allowed_Updates.includes(key));
+    console.log(isUpdateAllowed);
+
+    if(isUpdateAllowed) {
+        //validation for photoUrl
+        if(req.body?.photoUrl && !validator.isURL(req.body?.photoUrl)) {
+            throw new Error("photoUrl is not valid");
+        }
+    }
+    return isUpdateAllowed;
+
+}
+
+
+async function verifyPassword (req) {
+    const {oldPassword} = req.body;
+
+
+    const loggedInUser = req.user;
+    const passwordHash = loggedInUser.password;
+
+
+
+    const isPasswordValid = await bcrypt.compare(oldPassword,passwordHash);
+
+    console.log("password valid or not", isPasswordValid);
+
+    return isPasswordValid;
+
+    
+}
+
 module.exports = {
-    ValidateSignUpData
+    ValidateSignUpData,
+    validateEditProfileData,
+    verifyPassword
 }
