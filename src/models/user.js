@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
-        minLength: 5
+        minLength: 4
     },
     lastName: {
         type: String
@@ -78,6 +78,15 @@ userSchema.methods.validateUser = async function(passwordInputByUser) {
     const isPasswordValid = await bcrypt.compare(passwordInputByUser, passwordHash);
 
     return isPasswordValid;
+}
+
+userSchema.methods.getProfileData = async function() {
+
+    const user = this;
+    const {firstName, lastName,emailID,age, gender, about, photoUrl, skills } = user;
+
+    return {firstName, lastName,emailID,age, gender, about, photoUrl, skills};
+    
 }
            
 const User = mongoose.model("User", userSchema);
