@@ -8,8 +8,6 @@ const userAuth = async (req, res, next) => {
     try {
 
             const {token} = req.cookies;
-            console.log("token ", token);
-
             if(!token) {
                 throw new Error("Token is invalid");
             }
@@ -27,8 +25,6 @@ const userAuth = async (req, res, next) => {
             //user is valid, execute the next() request handler/middleware
             next();
     } catch(err) {
-
-        console.log("catch error");
         res.status(400).send("Error "+ err.message);
     }
 }
